@@ -1,0 +1,14 @@
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: string-calculator-ingress
+spec:
+  rules:
+    - host: scs.jyang.ml
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: string-calculator-service
+              servicePort: 80

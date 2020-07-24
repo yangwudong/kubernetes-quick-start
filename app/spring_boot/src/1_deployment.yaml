@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: string-calculator-deployment
+  labels:
+    app: string-calculator
+spec:
+  replicas: 4
+  minReadySeconds: 240
+  selector:
+    matchLabels:
+      app: string-calculator
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      name: string-calculator
+      labels:
+        app: string-calculator
+    spec:
+      containers:
+        - name: string-calculator
+          image: registry.cn-hangzhou.aliyuncs.com/jackyang/string_calculator:0.0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9080
+          env:
+            - name: ENV
+              value: local
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          readinessProbe:
+            periodSeconds: 3
+            timeoutSeconds: 1
+            httpGet:
+              path: /actuator/health/readiness
+              port: 9080
+            initialDelaySeconds: 30
+          livenessProbe:
+            periodSeconds: 3
+            timeoutSeconds: 1
+            httpGet:
+              path: /actuator/health/liveness
+              port: 9080
+            initialDelaySeconds: 30
+      imagePullSecrets:
+        - name: aliyun-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: string-calculator-service
+  labels:
+    app: string-calculator
+spec:
+  type: ClusterIP
+  ports:
+    - name: 80-9080
+      port: 80
+      targetPort: 9080
+  selector:
+    app: string-calculator

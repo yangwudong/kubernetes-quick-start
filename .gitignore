@@ -1,0 +1,6 @@
+.idea
+app/spring_boot/logs
+*.iml
+app/spring_boot/src/test/python/__pycache__
+app/spring_boot/target
+app/spring_boot/venv

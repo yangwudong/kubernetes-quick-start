@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.3.1.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>org.jack</groupId>
+    <artifactId>string-calculator</artifactId>
+    <version>0.0.1</version>
+    <name>string-calculator</name>
+    <description>String Calculator, demo app for K8S</description>
+
+    <properties>
+        <!-- Project Setting -->
+        <main.basedir>${basedir}</main.basedir>
+        <docs.main>${project.artifactId}</docs.main>
+        <docs.resources.dir>${project.build.directory}/build-docs</docs.resources.dir>
+        <start-class>org.jack.stringcalculator.StringCalculatorApplication</start-class>
+
+        <!-- Encode Settings -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- JDK version -->
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+
+        <junit.version>5.7.0-M1</junit.version>
+        <jib.version>2.4.0</jib.version>
+        <guava.version>29.0-jre</guava.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-websocket</artifactId>-->
+        <!--        </dependency>-->
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Boot actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Google Guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+
+        <!-- Unit testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>${jib.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <from>
+                        <image>
+                            openjdk:11-jdk-slim@sha256:0383d77eacad96f6b45ee5d3133d104d9eff142dafbdb51536602e0e6b929015
+                        </image>
+                    </from>
+                    <to>
+                        <image>registry.cn-hangzhou.aliyuncs.com/jackyang/string_calculator</image>
+                        <tags>
+                            <tag>${project.version}</tag>
+                            <tag>latest</tag>
+                        </tags>
+                        <!--                                                <image>docker.io/yangwudong/string_calculator</image>-->
+                    </to>
+                    <container>
+                        <labels>
+                            <maintainer>yangwudong@gmail.com</maintainer>
+                        </labels>
+                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                        <ports>
+                            <port>9080</port>
+                        </ports>
+                        <jvmFlags>
+                            <jvmFlag>-Dspring.profiles.active=${ENV}</jvmFlag>
+                            <jvmFlag>-server</jvmFlag>
+                            <!-- 元空间默认大小 -->
+<!--                            <jvmFlag>-XX:MetaspaceSize=512m</jvmFlag>-->
+                            <!-- 元空间最大大小 -->
+<!--                            <jvmFlag>-XX:MaxMetaspaceSize=512m</jvmFlag>-->
+                            <!-- 堆初始化大小 - 小应用512M； 大型应用4G -->
+                            <jvmFlag>-Xms1G</jvmFlag>
+                            <!-- 堆最大大小 -->
+                            <jvmFlag>-Xmx1G</jvmFlag>
+                            <!-- 新生代大小 - 小应用256M；大型应用2G -->
+<!--                            <jvmFlag>-Xmn128M</jvmFlag>-->
+                            <!-- 新生代分区比例 8:2 -->
+<!--                            <jvmFlag>-XX:SurvivorRatio=8</jvmFlag>-->
+                            <!-- 每个线程的堆大小 当前设置为512M / 256k = 2048线程 -->
+<!--                            <jvmFlag>-Xss256k</jvmFlag>-->
+                            <!-- 指定垃圾收集器为G1 -->
+                            <!--<jvmFlag>-XX:+UseConcMarkSweepGC</jvmFlag>-->
+                            <jvmFlag>-XX:+UseG1GC</jvmFlag>
+                            <!-- 最长GC暂停时间 -->
+                            <jvmFlag>-XX:MaxGCPauseMillis=200</jvmFlag>
+                            <!-- 预留代码缓存 -->
+<!--                            <jvmFlag>-XX:ReservedCodeCacheSize=64m</jvmFlag>-->
+                            <!-- 打印详细的GC日志 -->
+<!--                            <jvmFlag>-Xlog:gc*</jvmFlag>-->
+                            <!-- 当内存溢出时，转存 -->
+                            <jvmFlag>-XX:+HeapDumpOnOutOfMemoryError</jvmFlag>
+                            <!-- 转存保存位置 -->
+                            <jvmFlag>-XX:HeapDumpPath=/app/logs/jvm/dump/</jvmFlag>
+                        </jvmFlags>
+                    </container>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
